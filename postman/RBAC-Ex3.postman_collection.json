@@ -1,0 +1,2983 @@
+{
+  "info": {
+    "name": "IT4409 Ex3 RBAC",
+    "description": "Kiểm thử Backend RBAC. Chạy toàn bộ bằng Collection Runner hoặc newman theo đúng thứ tự thư mục. Đổi biến baseUrl để trỏ tới bản online.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00. Chuẩn bị (đăng nhập 4 vai trò, lấy ID)",
+      "item": [
+        {
+          "name": "Đăng nhập super-admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Có accessToken kiểu Bearer\", () => { pm.expect(j.tokenType).to.eql(\"Bearer\"); pm.expect(j.accessToken).to.be.a(\"string\"); });",
+                  "pm.collectionVariables.set(\"tokenAdmin\", j.accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/tokens",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grantType\": \"password\",\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Đăng nhập user-manager",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Có accessToken kiểu Bearer\", () => { pm.expect(j.tokenType).to.eql(\"Bearer\"); pm.expect(j.accessToken).to.be.a(\"string\"); });",
+                  "pm.collectionVariables.set(\"tokenManager\", j.accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/tokens",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grantType\": \"password\",\n  \"email\": \"{{managerEmail}}\",\n  \"password\": \"{{managerPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Đăng nhập auditor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Có accessToken kiểu Bearer\", () => { pm.expect(j.tokenType).to.eql(\"Bearer\"); pm.expect(j.accessToken).to.be.a(\"string\"); });",
+                  "pm.collectionVariables.set(\"tokenAuditor\", j.accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/tokens",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grantType\": \"password\",\n  \"email\": \"{{auditorEmail}}\",\n  \"password\": \"{{auditorPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Đăng nhập member",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Có accessToken kiểu Bearer\", () => { pm.expect(j.tokenType).to.eql(\"Bearer\"); pm.expect(j.accessToken).to.be.a(\"string\"); });",
+                  "pm.collectionVariables.set(\"tokenMember\", j.accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/tokens",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grantType\": \"password\",\n  \"email\": \"{{memberEmail}}\",\n  \"password\": \"{{memberPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Lấy ID các vai trò",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "pm.response.json().data.forEach((r) => pm.collectionVariables.set(\"roleId_\" + r.code, r.id));",
+                  "pm.test(\"Có đủ 4 vai trò mặc định\", () => [\"super-admin\", \"user-manager\", \"auditor\", \"member\"].forEach((c) => pm.expect(pm.collectionVariables.get(\"roleId_\" + c), c).to.be.a(\"string\")));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/roles?limit=100"
+          }
+        },
+        {
+          "name": "ID của super-admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"adminId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/me"
+          }
+        },
+        {
+          "name": "ID của user-manager",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"managerId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              }
+            ],
+            "url": "{{baseUrl}}/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "01. Bước 1: xác thực (mục 1.10 của đề)",
+      "item": [
+        {
+          "name": "B01 Đăng nhập đúng",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Có accessToken và expiresIn\", () => { const j = pm.response.json(); pm.expect(j.accessToken).to.be.a(\"string\"); pm.expect(j.expiresIn).to.be.a(\"number\"); });",
+                  "pm.test(\"Không cho phép cache\", () => pm.expect(pm.response.headers.get(\"Cache-Control\")).to.include(\"no-store\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/tokens",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grantType\": \"password\",\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "B02a Sai mật khẩu",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"error.code là INVALID_CREDENTIALS\", () => pm.expect(pm.response.json().error.code).to.eql(\"INVALID_CREDENTIALS\"));",
+                  "pm.collectionVariables.set(\"msgWrongPassword\", pm.response.json().error.message);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/tokens",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grantType\": \"password\",\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"Sai@Mat1khau\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "B02b Sai email, cùng thông điệp",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"error.code là INVALID_CREDENTIALS\", () => pm.expect(pm.response.json().error.code).to.eql(\"INVALID_CREDENTIALS\"));",
+                  "pm.test(\"Thông điệp giống trường hợp sai mật khẩu\", () => pm.expect(pm.response.json().error.message).to.eql(pm.collectionVariables.get(\"msgWrongPassword\")));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/tokens",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grantType\": \"password\",\n  \"email\": \"khong.ton.tai@sis.hust.edu.vn\",\n  \"password\": \"Sai@Mat1khau\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "B03 Thiếu password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"error.code là VALIDATION_ERROR\", () => pm.expect(pm.response.json().error.code).to.eql(\"VALIDATION_ERROR\"));",
+                  "pm.test(\"details chỉ ra trường password\", () => pm.expect(pm.response.json().error.details.map((d) => d.field)).to.include(\"password\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/tokens",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grantType\": \"password\",\n  \"email\": \"{{adminEmail}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "B04 GET /me không có Authorization",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"error.code là UNAUTHENTICATED\", () => pm.expect(pm.response.json().error.code).to.eql(\"UNAUTHENTICATED\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/me"
+          }
+        },
+        {
+          "name": "B05 GET /me với token sửa một ký tự",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"error.code là INVALID_TOKEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"INVALID_TOKEN\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}x"
+              }
+            ],
+            "url": "{{baseUrl}}/me"
+          }
+        },
+        {
+          "name": "B06 GET /me đúng token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Có permissions đã sắp xếp\", () => { pm.expect(j.permissions).to.be.an(\"array\").that.is.not.empty; pm.expect(j.permissions).to.eql([...j.permissions].sort()); });",
+                  "pm.test(\"Không có passwordHash\", () => pm.expect(j).to.not.have.property(\"passwordHash\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/me"
+          }
+        },
+        {
+          "name": "B07 grantType sai",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"error.code là VALIDATION_ERROR\", () => pm.expect(pm.response.json().error.code).to.eql(\"VALIDATION_ERROR\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/tokens",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grantType\": \"client_credentials\",\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Test cases bắt buộc T01 đến T24",
+      "item": [
+        {
+          "name": "T01 GET /users không token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"error.code là UNAUTHENTICATED\", () => pm.expect(pm.response.json().error.code).to.eql(\"UNAUTHENTICATED\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/users"
+          }
+        },
+        {
+          "name": "T02 GET /users bằng member",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"error.code là FORBIDDEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"FORBIDDEN\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenMember}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users"
+          }
+        },
+        {
+          "name": "T03 GET /users phân trang và sắp xếp",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"meta đúng\", () => { pm.expect(j.meta.page).to.eql(2); pm.expect(j.meta.limit).to.eql(3); pm.expect(j.meta.totalPages).to.eql(Math.max(1, Math.ceil(j.meta.totalItems / 3))); pm.expect(j.data.length).to.be.at.most(3); });",
+                  "pm.test(\"Sắp xếp tăng dần theo fullName\", () => { const n = j.data.map((u) => u.fullName); pm.expect(n).to.eql([...n].sort((a, b) => a.localeCompare(b, \"vi\"))); });",
+                  "pm.test(\"Không có passwordHash và không có người dùng đã xóa\", () => j.data.forEach((u) => { pm.expect(u).to.not.have.property(\"passwordHash\"); pm.expect(u.status).to.not.eql(\"deleted\"); }));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAuditor}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users?page=2&limit=3&sort=fullName"
+          }
+        },
+        {
+          "name": "T04 GET /users tìm kiếm và lọc",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Có kết quả\", () => pm.expect(j.data.length).to.be.above(0));",
+                  "pm.test(\"Chỉ gồm bản ghi active khớp từ khóa\", () => j.data.forEach((u) => { pm.expect(u.status).to.eql(\"active\"); pm.expect((u.fullName + \" \" + u.email).toLowerCase()).to.include(\"nguyen\"); }));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAuditor}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users?q=nguyen&status=active"
+          }
+        },
+        {
+          "name": "T05 GET /users?limit=500",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"error.code là INVALID_QUERY_PARAMETER\", () => pm.expect(pm.response.json().error.code).to.eql(\"INVALID_QUERY_PARAMETER\"));",
+                  "pm.test(\"details nêu tham số limit\", () => pm.expect(pm.response.json().error.details.map((d) => d.field)).to.include(\"limit\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAuditor}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users?limit=500"
+          }
+        },
+        {
+          "name": "T06 POST /users hợp lệ",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"victimEmail\", \"victim.\" + Date.now() + \"@sis.hust.edu.vn\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 201\", () => pm.response.to.have.status(201));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Có header Location trỏ tới tài nguyên mới\", () => pm.expect(pm.response.headers.get(\"Location\")).to.eql(\"/api/v1/users/\" + j.id));",
+                  "pm.test(\"Không có passwordHash\", () => { pm.expect(j).to.not.have.property(\"passwordHash\"); pm.expect(JSON.stringify(j)).to.not.include(\"$2\"); });",
+                  "pm.test(\"Vai trò member được gán\", () => pm.expect(j.roles.map((r) => r.code)).to.eql([\"member\"]));",
+                  "pm.collectionVariables.set(\"victimId\", j.id);",
+                  "pm.collectionVariables.set(\"victimFullName\", j.fullName);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/users",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{victimEmail}}\",\n  \"fullName\": \"Lê Văn Cường\",\n  \"phone\": \"+84901112233\",\n  \"password\": \"Victim@2026\",\n  \"roleIds\": [\n    \"{{roleId_member}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "T07 POST /users trùng email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"error.code là EMAIL_ALREADY_EXISTS\", () => pm.expect(pm.response.json().error.code).to.eql(\"EMAIL_ALREADY_EXISTS\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/users",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{victimEmail}}\",\n  \"fullName\": \"Lê Văn Cường\",\n  \"password\": \"Victim@2026\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "T08 POST /users mật khẩu 123",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"error.code là VALIDATION_ERROR\", () => pm.expect(pm.response.json().error.code).to.eql(\"VALIDATION_ERROR\"));",
+                  "pm.test(\"issue WEAK_PASSWORD\", () => pm.expect(pm.response.json().error.details.map((d) => d.issue)).to.include(\"WEAK_PASSWORD\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/users",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"weak.{{$timestamp}}@sis.hust.edu.vn\",\n  \"fullName\": \"Mật Khẩu Yếu\",\n  \"password\": \"123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "T09 POST /users kèm super-admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"error.code là PRIVILEGE_ESCALATION\", () => pm.expect(pm.response.json().error.code).to.eql(\"PRIVILEGE_ESCALATION\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/users",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"esc.{{$timestamp}}@sis.hust.edu.vn\",\n  \"fullName\": \"Leo Thang\",\n  \"password\": \"Esc@lation1\",\n  \"roleIds\": [\n    \"{{roleId_super-admin}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "T10 PATCH /users/:id đổi phone",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"phone đổi, các trường khác giữ nguyên\", () => { pm.expect(j.phone).to.eql(\"+84911222333\"); pm.expect(j.email).to.eql(pm.collectionVariables.get(\"victimEmail\")); pm.expect(j.fullName).to.eql(pm.collectionVariables.get(\"victimFullName\")); pm.expect(j.status).to.eql(\"active\"); pm.expect(j.roles.length).to.eql(1); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/users/{{victimId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+84911222333\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "T11 PATCH /users/:id gửi roles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"error.code là VALIDATION_ERROR\", () => pm.expect(pm.response.json().error.code).to.eql(\"VALIDATION_ERROR\"));",
+                  "pm.test(\"issue FIELD_NOT_ALLOWED\", () => pm.expect(pm.response.json().error.details[0].issue).to.eql(\"FIELD_NOT_ALLOWED\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/users/{{victimId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roles\": [\n    \"{{roleId_super-admin}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "T12 PATCH chính mình status locked",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"error.code là SELF_ACTION_FORBIDDEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"SELF_ACTION_FORBIDDEN\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/users/{{managerId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"locked\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "T13 PUT gán vai trò auditor hai lần",
+          "item": [
+            {
+              "name": "T13a PUT lần 1",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Mã trạng thái 204\", () => pm.response.to.have.status(204));",
+                      "pm.test(\"Không có body\", () => pm.expect(pm.response.text()).to.eql(\"\"));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenManager}}"
+                  }
+                ],
+                "url": "{{baseUrl}}/users/{{victimId}}/roles/{{roleId_auditor}}"
+              }
+            },
+            {
+              "name": "T13b PUT lần 2",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Mã trạng thái 204\", () => pm.response.to.have.status(204));",
+                      "pm.test(\"Không có body\", () => pm.expect(pm.response.text()).to.eql(\"\"));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenManager}}"
+                  }
+                ],
+                "url": "{{baseUrl}}/users/{{victimId}}/roles/{{roleId_auditor}}"
+              }
+            },
+            {
+              "name": "T13c Vai trò không bị trùng",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                      "const j = pm.response.json();",
+                      "pm.test(\"auditor xuất hiện đúng một lần\", () => pm.expect(j.data.filter((r) => r.code === \"auditor\").length).to.eql(1));",
+                      "pm.test(\"meta.totalItems khớp\", () => pm.expect(j.meta.totalItems).to.eql(j.data.length));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenManager}}"
+                  }
+                ],
+                "url": "{{baseUrl}}/users/{{victimId}}/roles"
+              }
+            }
+          ]
+        },
+        {
+          "name": "T14 PUT gán super-admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"error.code là PRIVILEGE_ESCALATION\", () => pm.expect(pm.response.json().error.code).to.eql(\"PRIVILEGE_ESCALATION\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users/{{victimId}}/roles/{{roleId_super-admin}}"
+          }
+        },
+        {
+          "name": "T15 Thu hồi vai trò có hiệu lực ngay",
+          "item": [
+            {
+              "name": "T15a Admin tạo người dùng A mang user-manager",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set(\"userAEmail\", \"usera.\" + Date.now() + \"@sis.hust.edu.vn\");"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Mã trạng thái 201\", () => pm.response.to.have.status(201));",
+                      "pm.collectionVariables.set(\"userAId\", pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenAdmin}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/users",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{userAEmail}}\",\n  \"fullName\": \"Người Dùng A\",\n  \"password\": \"UserA@2026\",\n  \"roleIds\": [\n    \"{{roleId_user-manager}}\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "T15b A đăng nhập",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                      "pm.collectionVariables.set(\"tokenA\", pm.response.json().accessToken);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/auth/tokens",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"grantType\": \"password\",\n  \"email\": \"{{userAEmail}}\",\n  \"password\": \"UserA@2026\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "T15c A gọi GET /users, còn quyền",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenA}}"
+                  }
+                ],
+                "url": "{{baseUrl}}/users?limit=1"
+              }
+            },
+            {
+              "name": "T15d Admin gỡ user-manager của A",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Mã trạng thái 204\", () => pm.response.to.have.status(204));",
+                      "pm.test(\"Không có body\", () => pm.expect(pm.response.text()).to.eql(\"\"));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenAdmin}}"
+                  }
+                ],
+                "url": "{{baseUrl}}/users/{{userAId}}/roles/{{roleId_user-manager}}"
+              }
+            },
+            {
+              "name": "T15e A gọi lại bằng token cũ",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Mã trạng thái 403\", () => pm.response.to.have.status(403));",
+                      "pm.test(\"error.code là FORBIDDEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"FORBIDDEN\"));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenA}}"
+                  }
+                ],
+                "url": "{{baseUrl}}/users?limit=1"
+              }
+            }
+          ]
+        },
+        {
+          "name": "T16 DELETE /users/:id bằng user-manager",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"error.code là FORBIDDEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"FORBIDDEN\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users/{{victimId}}"
+          }
+        },
+        {
+          "name": "T17 Xóa mềm người dùng",
+          "item": [
+            {
+              "name": "T17a DELETE bằng super-admin",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Mã trạng thái 204\", () => pm.response.to.have.status(204));",
+                      "pm.test(\"Không có body\", () => pm.expect(pm.response.text()).to.eql(\"\"));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenAdmin}}"
+                  }
+                ],
+                "url": "{{baseUrl}}/users/{{victimId}}"
+              }
+            },
+            {
+              "name": "T17b GET chi tiết sau khi xóa",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Mã trạng thái 404\", () => pm.response.to.have.status(404));",
+                      "pm.test(\"error.code là USER_NOT_FOUND\", () => pm.expect(pm.response.json().error.code).to.eql(\"USER_NOT_FOUND\"));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenAdmin}}"
+                  }
+                ],
+                "url": "{{baseUrl}}/users/{{victimId}}"
+              }
+            },
+            {
+              "name": "T17c Đăng nhập tài khoản đã xóa",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Mã trạng thái 401\", () => pm.response.to.have.status(401));",
+                      "pm.test(\"error.code là INVALID_CREDENTIALS\", () => pm.expect(pm.response.json().error.code).to.eql(\"INVALID_CREDENTIALS\"));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/auth/tokens",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"grantType\": \"password\",\n  \"email\": \"{{victimEmail}}\",\n  \"password\": \"Victim@2026\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "T17d Email của tài khoản đã xóa vẫn bị giữ chỗ (BR-01)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Mã trạng thái 409\", () => pm.response.to.have.status(409));",
+                      "pm.test(\"error.code là EMAIL_ALREADY_EXISTS\", () => pm.expect(pm.response.json().error.code).to.eql(\"EMAIL_ALREADY_EXISTS\"));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenAdmin}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/users",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{victimEmail}}\",\n  \"fullName\": \"Trùng Email\",\n  \"password\": \"Victim@2026\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "T18 GET /users/abc",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"error.code là USER_NOT_FOUND\", () => pm.expect(pm.response.json().error.code).to.eql(\"USER_NOT_FOUND\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users/abc"
+          }
+        },
+        {
+          "name": "T19 POST /roles trùng mã",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"error.code là ROLE_CODE_EXISTS\", () => pm.expect(pm.response.json().error.code).to.eql(\"ROLE_CODE_EXISTS\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/roles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"tro-giang\",\n  \"name\": \"Trợ giảng trùng\",\n  \"permissions\": [\n    \"users:read\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "T20 PUT quyền của vai trò member",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"error.code là SYSTEM_ROLE_PROTECTED\", () => pm.expect(pm.response.json().error.code).to.eql(\"SYSTEM_ROLE_PROTECTED\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/roles/{{roleId_member}}/permissions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissions\": [\n    \"users:read\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "T21 DELETE vai trò đang dùng",
+          "item": [
+            {
+              "name": "T21a Lấy ID vai trò tro-giang",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                      "const r = pm.response.json().data.find((x) => x.code === \"tro-giang\");",
+                      "pm.test(\"Seed có vai trò tro-giang đang được gán\", () => { pm.expect(r).to.be.an(\"object\"); pm.expect(r.userCount).to.be.above(0); });",
+                      "pm.collectionVariables.set(\"roleId_tro-giang\", r.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenAdmin}}"
+                  }
+                ],
+                "url": "{{baseUrl}}/roles?q=tro-giang"
+              }
+            },
+            {
+              "name": "T21b DELETE /roles/:id",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Mã trạng thái 409\", () => pm.response.to.have.status(409));",
+                      "pm.test(\"error.code là ROLE_IN_USE\", () => pm.expect(pm.response.json().error.code).to.eql(\"ROLE_IN_USE\"));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenAdmin}}"
+                  }
+                ],
+                "url": "{{baseUrl}}/roles/{{roleId_tro-giang}}"
+              }
+            }
+          ]
+        },
+        {
+          "name": "T22 PUT quyền không tồn tại",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"error.code là PERMISSION_NOT_FOUND\", () => pm.expect(pm.response.json().error.code).to.eql(\"PERMISSION_NOT_FOUND\"));",
+                  "pm.test(\"details nêu users:fly\", () => pm.expect(pm.response.json().error.details[0].message).to.include(\"users:fly\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/roles/{{roleId_tro-giang}}/permissions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissions\": [\n    \"users:fly\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "T23 Header X-User-Role tự đặt",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"error.code là FORBIDDEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"FORBIDDEN\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenMember}}"
+              },
+              {
+                "key": "X-User-Role",
+                "value": "admin"
+              }
+            ],
+            "url": "{{baseUrl}}/users"
+          }
+        },
+        {
+          "name": "T24 POST /users body JSON hỏng",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"error.code là MALFORMED_JSON\", () => pm.expect(pm.response.json().error.code).to.eql(\"MALFORMED_JSON\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/users",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"email\": \"x@x.vn\", ",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Quy tắc nghiệp vụ bổ sung (BR-03, BR-05, BR-08, mass assignment, leo thang vai trò)",
+      "item": [
+        {
+          "name": "X01 Super-admin tự khóa mình",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"error.code là SELF_ACTION_FORBIDDEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"SELF_ACTION_FORBIDDEN\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/users/{{adminId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"locked\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "X02 Super-admin tự xóa mình",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"error.code là SELF_ACTION_FORBIDDEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"SELF_ACTION_FORBIDDEN\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users/{{adminId}}"
+          }
+        },
+        {
+          "name": "X03 Tự gỡ vai trò của mình",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"error.code là SELF_ACTION_FORBIDDEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"SELF_ACTION_FORBIDDEN\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users/{{managerId}}/roles/{{roleId_user-manager}}"
+          }
+        },
+        {
+          "name": "X04 Xóa vai trò hệ thống",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"error.code là SYSTEM_ROLE_PROTECTED\", () => pm.expect(pm.response.json().error.code).to.eql(\"SYSTEM_ROLE_PROTECTED\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/roles/{{roleId_member}}"
+          }
+        },
+        {
+          "name": "X05 POST /users gửi trường status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"error.code là VALIDATION_ERROR\", () => pm.expect(pm.response.json().error.code).to.eql(\"VALIDATION_ERROR\"));",
+                  "pm.test(\"Cả hai trường lạ bị báo FIELD_NOT_ALLOWED\", () => pm.expect(pm.response.json().error.details.filter((d) => d.issue === \"FIELD_NOT_ALLOWED\").map((d) => d.field).sort()).to.eql([\"isAdmin\", \"status\"]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/users",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"mass.{{$timestamp}}@sis.hust.edu.vn\",\n  \"fullName\": \"Mass Assignment\",\n  \"password\": \"Mass@2026x\",\n  \"status\": \"locked\",\n  \"isAdmin\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "X06 Gỡ vai trò người dùng vốn không có",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 204\", () => pm.response.to.have.status(204));",
+                  "pm.test(\"Không có body\", () => pm.expect(pm.response.text()).to.eql(\"\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users/{{userAId}}/roles/{{roleId_auditor}}"
+          }
+        },
+        {
+          "name": "X07 Gán vai trò không tồn tại",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"error.code là ROLE_NOT_FOUND\", () => pm.expect(pm.response.json().error.code).to.eql(\"ROLE_NOT_FOUND\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users/{{userAId}}/roles/000000000000000000000000"
+          }
+        },
+        {
+          "name": "X08 Endpoint không tồn tại trả JSON",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"error.code là ENDPOINT_NOT_FOUND\", () => pm.expect(pm.response.json().error.code).to.eql(\"ENDPOINT_NOT_FOUND\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/khong-co"
+          }
+        },
+        {
+          "name": "X09 Tạo người dùng sẽ bị khóa",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"userLEmail\", \"userl.\" + Date.now() + \"@sis.hust.edu.vn\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"userLId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/users",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{userLEmail}}\",\n  \"fullName\": \"Người Dùng L\",\n  \"password\": \"UserL@2026\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "X10 L đăng nhập khi còn hoạt động",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"tokenL\", pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/tokens",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grantType\": \"password\",\n  \"email\": \"{{userLEmail}}\",\n  \"password\": \"UserL@2026\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "X11 Admin khóa L",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"status là locked\", () => pm.expect(pm.response.json().status).to.eql(\"locked\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/users/{{userLId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"locked\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "X12 L đăng nhập khi đã khóa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"error.code là ACCOUNT_LOCKED\", () => pm.expect(pm.response.json().error.code).to.eql(\"ACCOUNT_LOCKED\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/tokens",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grantType\": \"password\",\n  \"email\": \"{{userLEmail}}\",\n  \"password\": \"UserL@2026\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "X13 Token cũ của L không còn hiệu lực",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"error.code là INVALID_TOKEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"INVALID_TOKEN\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenL}}"
+              }
+            ],
+            "url": "{{baseUrl}}/me"
+          }
+        },
+        {
+          "name": "X14 Admin mở khóa L",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/users/{{userLId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"active\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "X15 L đăng nhập lại được",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/tokens",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grantType\": \"password\",\n  \"email\": \"{{userLEmail}}\",\n  \"password\": \"UserL@2026\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "X16 Tạo vai trò mới bằng super-admin",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"tmpRoleCode\", \"e2e-\" + Date.now().toString(36));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 201\", () => pm.response.to.have.status(201));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Location và dữ liệu đúng\", () => { pm.expect(pm.response.headers.get(\"Location\")).to.eql(\"/api/v1/roles/\" + j.id); pm.expect(j.isSystem).to.eql(false); pm.expect(j.userCount).to.eql(0); });",
+                  "pm.collectionVariables.set(\"tmpRoleId\", j.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/roles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"{{tmpRoleCode}}\",\n  \"name\": \"Vai trò kiểm thử\",\n  \"description\": \"Tạo bởi Postman\",\n  \"permissions\": [\n    \"roles:read\",\n    \"roles:create\",\n    \"roles:update\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "X17 Gán vai trò kiểm thử cho L",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users/{{userLId}}/roles/{{tmpRoleId}}"
+          }
+        },
+        {
+          "name": "X18 L đăng nhập để lấy token mang vai trò kiểm thử",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"tokenL\", pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/tokens",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grantType\": \"password\",\n  \"email\": \"{{userLEmail}}\",\n  \"password\": \"UserL@2026\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "X19 L tạo vai trò chứa quyền mình không có",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"error.code là PRIVILEGE_ESCALATION\", () => pm.expect(pm.response.json().error.code).to.eql(\"PRIVILEGE_ESCALATION\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenL}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/roles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"{{tmpRoleCode}}-x\",\n  \"name\": \"Leo thang\",\n  \"permissions\": [\n    \"users:delete\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "X20 L thêm quyền mình không có vào vai trò khác",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"error.code là PRIVILEGE_ESCALATION\", () => pm.expect(pm.response.json().error.code).to.eql(\"PRIVILEGE_ESCALATION\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenL}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/roles/{{roleId_tro-giang}}/permissions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissions\": [\n    \"users:read\",\n    \"roles:read\",\n    \"users:delete\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "X21 L không đủ roles:delete để xóa vai trò",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"error.code là FORBIDDEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"FORBIDDEN\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenL}}"
+              }
+            ],
+            "url": "{{baseUrl}}/roles/{{tmpRoleId}}"
+          }
+        },
+        {
+          "name": "X22 Admin xóa vai trò đang dùng thất bại",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"error.code là ROLE_IN_USE\", () => pm.expect(pm.response.json().error.code).to.eql(\"ROLE_IN_USE\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/roles/{{tmpRoleId}}"
+          }
+        },
+        {
+          "name": "X23 Admin xóa mềm L rồi dọn vai trò kiểm thử",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users/{{userLId}}"
+          }
+        },
+        {
+          "name": "X24 Xóa vai trò kiểm thử sau khi không còn người dùng",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 204\", () => pm.response.to.have.status(204));",
+                  "pm.test(\"Không có body\", () => pm.expect(pm.response.text()).to.eql(\"\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/roles/{{tmpRoleId}}"
+          }
+        },
+        {
+          "name": "X25 GET /roles trả userCount và meta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"meta và userCount hợp lệ\", () => { pm.expect(j.data.length).to.be.at.most(2); pm.expect(j.meta.limit).to.eql(2); j.data.forEach((r) => pm.expect(r.userCount).to.be.a(\"number\")); });",
+                  "pm.test(\"Sắp xếp theo code\", () => pm.expect(j.data.map((r) => r.code)).to.eql(j.data.map((r) => r.code).sort()));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAuditor}}"
+              }
+            ],
+            "url": "{{baseUrl}}/roles?sort=code&limit=2&page=1"
+          }
+        },
+        {
+          "name": "X26 GET /roles/:id/permissions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Đúng ba quyền của auditor\", () => pm.expect(j.data.map((p) => p.code).sort()).to.eql([\"permissions:read\", \"roles:read\", \"users:read\"]));",
+                  "pm.test(\"Mỗi quyền có resource và action\", () => j.data.forEach((p) => { pm.expect(p.resource).to.be.a(\"string\"); pm.expect(p.action).to.be.a(\"string\"); }));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAuditor}}"
+              }
+            ],
+            "url": "{{baseUrl}}/roles/{{roleId_auditor}}/permissions"
+          }
+        },
+        {
+          "name": "X27 GET /permissions?resource=users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Chỉ quyền thuộc resource users\", () => { const j = pm.response.json(); pm.expect(j.data.length).to.eql(4); j.data.forEach((p) => pm.expect(p.resource).to.eql(\"users\")); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAuditor}}"
+              }
+            ],
+            "url": "{{baseUrl}}/permissions?resource=users"
+          }
+        },
+        {
+          "name": "X28 GET /permissions bằng member",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"error.code là FORBIDDEN\", () => pm.expect(pm.response.json().error.code).to.eql(\"FORBIDDEN\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenMember}}"
+              }
+            ],
+            "url": "{{baseUrl}}/permissions"
+          }
+        },
+        {
+          "name": "X29 Tìm kiếm với ký tự đặc biệt không gây lỗi 500",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Không có kết quả khớp chuỗi đã thoát ký tự\", () => pm.expect(pm.response.json().data).to.eql([]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAuditor}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users?q=((("
+          }
+        },
+        {
+          "name": "X30 q quá ngắn",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"error.code là INVALID_QUERY_PARAMETER\", () => pm.expect(pm.response.json().error.code).to.eql(\"INVALID_QUERY_PARAMETER\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAuditor}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users?q=a"
+          }
+        },
+        {
+          "name": "X31 sort theo trường không cho phép",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"error.code là INVALID_QUERY_PARAMETER\", () => pm.expect(pm.response.json().error.code).to.eql(\"INVALID_QUERY_PARAMETER\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAuditor}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users?sort=passwordHash"
+          }
+        },
+        {
+          "name": "X32 roleId sai định dạng",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"error.code là INVALID_QUERY_PARAMETER\", () => pm.expect(pm.response.json().error.code).to.eql(\"INVALID_QUERY_PARAMETER\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAuditor}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users?roleId=abc"
+          }
+        },
+        {
+          "name": "X33 Lọc theo roleId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Mọi người dùng đều mang vai trò auditor\", () => { const j = pm.response.json(); pm.expect(j.data.length).to.be.above(0); j.data.forEach((u) => pm.expect(u.roles.map((r) => r.code)).to.include(\"auditor\")); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAuditor}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users?roleId={{roleId_auditor}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Phần mở rộng (PATCH /me, PUT /me/password, quyền hiệu lực, người dùng của vai trò, ETag)",
+      "item": [
+        {
+          "name": "E01 PATCH /me",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Trả hồ sơ kèm permissions\", () => { const j = pm.response.json(); pm.expect(j.fullName).to.eql(\"Giảng viên Thành viên\"); pm.expect(j.permissions).to.eql([]); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenMember}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/me",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Giảng viên Thành viên\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "E02 PATCH /me gửi trường cấm",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"error.code là VALIDATION_ERROR\", () => pm.expect(pm.response.json().error.code).to.eql(\"VALIDATION_ERROR\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenMember}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/me",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roles\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "E03 PUT /me/password sai mật khẩu hiện tại",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"error.code là VALIDATION_ERROR\", () => pm.expect(pm.response.json().error.code).to.eql(\"VALIDATION_ERROR\"));",
+                  "pm.test(\"issue INCORRECT_PASSWORD\", () => pm.expect(pm.response.json().error.details[0].issue).to.eql(\"INCORRECT_PASSWORD\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/me/password",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"Sai@Mat1khau\",\n  \"newPassword\": \"UserA@2027\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "E04 PUT /me/password mật khẩu mới yếu",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"error.code là VALIDATION_ERROR\", () => pm.expect(pm.response.json().error.code).to.eql(\"VALIDATION_ERROR\"));",
+                  "pm.test(\"issue WEAK_PASSWORD\", () => pm.expect(pm.response.json().error.details[0].issue).to.eql(\"WEAK_PASSWORD\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/me/password",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"UserA@2026\",\n  \"newPassword\": \"abc\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "E05 PUT /me/password thành công",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 204\", () => pm.response.to.have.status(204));",
+                  "pm.test(\"Không có body\", () => pm.expect(pm.response.text()).to.eql(\"\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/me/password",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"UserA@2026\",\n  \"newPassword\": \"UserA@2027\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "E06 Mật khẩu cũ không còn đăng nhập được",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"error.code là INVALID_CREDENTIALS\", () => pm.expect(pm.response.json().error.code).to.eql(\"INVALID_CREDENTIALS\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/tokens",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grantType\": \"password\",\n  \"email\": \"{{userAEmail}}\",\n  \"password\": \"UserA@2026\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "E07 Mật khẩu mới đăng nhập được",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/tokens",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grantType\": \"password\",\n  \"email\": \"{{userAEmail}}\",\n  \"password\": \"UserA@2027\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "E08 GET /users/:id/permissions kèm nguồn",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Mỗi quyền nêu vai trò nguồn\", () => { const j = pm.response.json(); pm.expect(j.data.length).to.eql(6); j.data.forEach((p) => pm.expect(p.sources.map((s) => s.code)).to.eql([\"user-manager\"])); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAuditor}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users/{{managerId}}/permissions"
+          }
+        },
+        {
+          "name": "E09 GET /roles/:id/users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Mọi người dùng đều mang vai trò auditor\", () => { const j = pm.response.json(); pm.expect(j.data.length).to.be.above(0); pm.expect(j.meta.totalItems).to.eql(j.data.length); j.data.forEach((u) => pm.expect(u.roles.map((r) => r.code)).to.include(\"auditor\")); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/roles/{{roleId_auditor}}/users"
+          }
+        },
+        {
+          "name": "E10 GET /permissions lần đầu lấy ETag",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Có ETag\", () => pm.expect(pm.response.headers.get(\"ETag\")).to.be.a(\"string\"));",
+                  "pm.collectionVariables.set(\"permEtag\", pm.response.headers.get(\"ETag\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/permissions"
+          }
+        },
+        {
+          "name": "E11 GET /permissions kèm If-None-Match trả 304",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mã trạng thái 304\", () => pm.response.to.have.status(304));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "If-None-Match",
+                "value": "{{permEtag}}"
+              },
+              {
+                "key": "Cache-Control",
+                "value": "max-age=0"
+              }
+            ],
+            "url": "{{baseUrl}}/permissions"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001/api/v1"
+    },
+    {
+      "key": "adminEmail",
+      "value": "gv.admin@sis.hust.edu.vn"
+    },
+    {
+      "key": "adminPassword",
+      "value": "GvAdmin@2026"
+    },
+    {
+      "key": "managerEmail",
+      "value": "gv.manager@sis.hust.edu.vn"
+    },
+    {
+      "key": "managerPassword",
+      "value": "GvManager@2026"
+    },
+    {
+      "key": "auditorEmail",
+      "value": "gv.auditor@sis.hust.edu.vn"
+    },
+    {
+      "key": "auditorPassword",
+      "value": "GvAuditor@2026"
+    },
+    {
+      "key": "memberEmail",
+      "value": "gv.member@sis.hust.edu.vn"
+    },
+    {
+      "key": "memberPassword",
+      "value": "GvMember@2026"
+    }
+  ]
+}
