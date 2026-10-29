@@ -1,0 +1,23 @@
+{
+  "name": "rbac-backend",
+  "version": "1.0.0",
+  "description": "Backend REST API cho bài tập Fullstack: quản lý người dùng và phân quyền RBAC",
+  "main": "server.js",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node seed.js"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.11.4"
+  }
+}
