@@ -57,8 +57,11 @@ const USERS = JSON.parse(fs.readFileSync(usersFile, "utf8"));
   const roles = await Role.insertMany(ROLES);
   const roleId = Object.fromEntries(roles.map((r) => [r.code, r._id]));
 
-  for (const u of USERS) {
+  // Người dùng đứng đầu seed-users.json được tạo sau cùng, nên xuất hiện đầu danh sách khi sắp xếp mặc định -createdAt
+  const base = Date.now();
+  for (const [i, u] of USERS.entries()) {
     await User.create({
+      createdAt: new Date(base - i * 1000),
       email: u.email,
       fullName: u.fullName,
       phone: u.phone ?? null,
