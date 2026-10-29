@@ -1,0 +1,35 @@
+# Blueprint cho Render. Dùng: Render Dashboard, New, Blueprint, chọn repository này.
+# Cơ sở dữ liệu là MongoDB Atlas (gói M0), không tạo trong file này.
+services:
+  # Backend: Node.js Web Service
+  - type: web
+    name: rbac-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: node server.js
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: MONGODB_URI # dán chuỗi kết nối Atlas trong Dashboard
+        sync: false
+      - key: JWT_SECRET # Render tự sinh chuỗi ngẫu nhiên
+        generateValue: true
+      - key: ACCESS_TOKEN_TTL
+        value: "3600"
+      - key: CORS_ORIGINS # dán origin của Frontend, ví dụ https://rbac-web.onrender.com
+        sync: false
+
+  # Frontend: Static Site, build chỉ ghi URL Backend vào config.js
+  - type: web
+    name: rbac-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: |
+      echo "window.APP_CONFIG = { API_BASE: \"${API_BASE}\" };" > config.js
+    staticPublishPath: .
+    envVars:
+      - key: API_BASE # ví dụ https://rbac-api.onrender.com/api/v1
+        sync: false
