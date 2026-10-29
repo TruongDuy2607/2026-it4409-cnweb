@@ -156,8 +156,7 @@ router.delete("/:userId/roles/:roleId", requirePermission("roles:assign"), loadU
   const missing = missingPermissions(req.role.permissions, req.permissions);
   if (missing.length)
     return fail(res, 403, "PRIVILEGE_ESCALATION", `Không thể gỡ vai trò '${req.role.code}' vì bạn không có quyền: ${missing.join(", ")}.`);
-  const holdsRole = req.target.roles.some((r) => sameId(r._id, req.role._id));
-  if (holdsRole && req.role.code === "super-admin" && (await isLastSuperAdmin(req.target)))
+  if (await isLastSuperAdmin(req.target, req.role._id))
     return fail(res, 409, "LAST_SUPER_ADMIN", "Không thể gỡ vai trò super-admin của người dùng cuối cùng còn hoạt động.");
   await User.updateOne({ _id: req.target._id }, { $pull: { roles: req.role._id } });
   res.status(204).end();
