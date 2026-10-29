@@ -297,13 +297,13 @@ const collection = {
   variable: [
     { key: "baseUrl", value: "http://localhost:3001/api/v1" },
     { key: "adminEmail", value: "gv.admin@sis.hust.edu.vn" },
-    { key: "adminPassword", value: "GvAdmin@2026" },
+    { key: "adminPassword", value: "Q6oWBRwd9kVkgt@9" },
     { key: "managerEmail", value: "gv.manager@sis.hust.edu.vn" },
-    { key: "managerPassword", value: "GvManager@2026" },
+    { key: "managerPassword", value: "Er5f4MTMiBFHk8@9" },
     { key: "auditorEmail", value: "gv.auditor@sis.hust.edu.vn" },
-    { key: "auditorPassword", value: "GvAuditor@2026" },
+    { key: "auditorPassword", value: "oWEWMezS6Q5ikH@9" },
     { key: "memberEmail", value: "gv.member@sis.hust.edu.vn" },
-    { key: "memberPassword", value: "GvMember@2026" },
+    { key: "memberPassword", value: "h3eURYbfkKibjo@9" },
   ],
 };
 fs.writeFileSync(path.join(__dirname, "RBAC-Ex3.postman_collection.json"), JSON.stringify(collection, null, 2) + "\n");

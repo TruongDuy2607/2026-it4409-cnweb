@@ -1,20 +1,17 @@
 [
-  { "email": "20225000@sis.hust.edu.vn", "fullName": "Trương Văn Duy", "phone": "+84912345601", "password": "Admin@2026", "roles": ["super-admin"] },
-
-  { "email": "thanhvien1@sis.hust.edu.vn", "fullName": "Trần Thị Thành Viên", "phone": "+84912345602", "password": "Member1@2026", "roles": ["user-manager"] },
-  { "email": "thanhvien2@sis.hust.edu.vn", "fullName": "Phạm Minh Quân", "phone": "+84912345603", "password": "Member2@2026", "roles": ["auditor"] },
-
-  { "email": "an.nguyen@sis.hust.edu.vn", "fullName": "Nguyễn Văn An", "phone": "+84912345604", "password": "Student@2026", "roles": ["member"] },
-  { "email": "binh.nguyen@sis.hust.edu.vn", "fullName": "Nguyễn Thị Bình", "phone": null, "password": "Student@2026", "roles": ["member"] },
-  { "email": "duc.hoang@sis.hust.edu.vn", "fullName": "Hoàng Minh Đức", "phone": "+84912345606", "password": "Student@2026", "roles": ["member"] },
-  { "email": "ha.vu@sis.hust.edu.vn", "fullName": "Vũ Thu Hà", "phone": "+84912345607", "password": "Student@2026", "roles": ["tro-giang"] },
-  { "email": "huy.dang@sis.hust.edu.vn", "fullName": "Đặng Quốc Huy", "phone": null, "password": "Student@2026", "roles": ["member", "tro-giang"] },
-  { "email": "mai.bui@sis.hust.edu.vn", "fullName": "Bùi Thanh Mai", "phone": "+84912345609", "password": "Student@2026", "roles": ["member"] },
-  { "email": "tuan.phan@sis.hust.edu.vn", "fullName": "Phan Anh Tuấn", "phone": "+84912345610", "password": "Student@2026", "roles": ["member"] },
-  { "email": "linh.ngo@sis.hust.edu.vn", "fullName": "Ngô Khánh Linh", "phone": null, "password": "Student@2026", "roles": ["member"] },
-
-  { "email": "gv.admin@sis.hust.edu.vn", "fullName": "Giảng viên Quản trị", "phone": null, "password": "GvAdmin@2026", "roles": ["super-admin"] },
-  { "email": "gv.manager@sis.hust.edu.vn", "fullName": "Giảng viên Quản lý", "phone": null, "password": "GvManager@2026", "roles": ["user-manager"] },
-  { "email": "gv.auditor@sis.hust.edu.vn", "fullName": "Giảng viên Kiểm toán", "phone": null, "password": "GvAuditor@2026", "roles": ["auditor"] },
-  { "email": "gv.member@sis.hust.edu.vn", "fullName": "Giảng viên Thành viên", "phone": null, "password": "GvMember@2026", "roles": ["member"] }
+  {"email": "duy.tv261020m@sis.hust.edu.vn", "fullName": "Trương Văn Duy", "phone": "+84705418210", "password": "It4409-cnweb", "roles": ["super-admin"]},
+  {"email": "lan.tran@sis.hust.edu.vn", "fullName": "Trần Thị Lan", "phone": "+84912345602", "password": "It4409-cnweb", "roles": ["user-manager"]},
+  {"email": "quan.pham@sis.hust.edu.vn", "fullName": "Phạm Minh Quân", "phone": "+84912345603", "password": "It4409-cnweb", "roles": ["auditor"]},
+  {"email": "an.nguyen@sis.hust.edu.vn", "fullName": "Nguyễn Văn An", "phone": "+84912345604", "password": "It4409-cnweb", "roles": ["member"]},
+  {"email": "binh.nguyen@sis.hust.edu.vn", "fullName": "Nguyễn Thị Bình", "phone": null, "password": "It4409-cnweb", "roles": ["member"]},
+  {"email": "duc.hoang@sis.hust.edu.vn", "fullName": "Hoàng Minh Đức", "phone": "+84912345606", "password": "It4409-cnweb", "roles": ["member"]},
+  {"email": "ha.vu@sis.hust.edu.vn", "fullName": "Vũ Thu Hà", "phone": "+84912345607", "password": "It4409-cnweb", "roles": ["tro-giang"]},
+  {"email": "huy.dang@sis.hust.edu.vn", "fullName": "Đặng Quốc Huy", "phone": null, "password": "It4409-cnweb", "roles": ["member", "tro-giang"]},
+  {"email": "mai.bui@sis.hust.edu.vn", "fullName": "Bùi Thanh Mai", "phone": "+84912345609", "password": "It4409-cnweb", "roles": ["member"]},
+  {"email": "tuan.phan@sis.hust.edu.vn", "fullName": "Phan Anh Tuấn", "phone": "+84912345610", "password": "It4409-cnweb", "roles": ["member"]},
+  {"email": "linh.ngo@sis.hust.edu.vn", "fullName": "Ngô Khánh Linh", "phone": null, "password": "It4409-cnweb", "roles": ["member"]},
+  {"email": "gv.admin@sis.hust.edu.vn", "fullName": "Giảng viên Quản trị", "phone": null, "password": "Q6oWBRwd9kVkgt@9", "roles": ["super-admin"]},
+  {"email": "gv.manager@sis.hust.edu.vn", "fullName": "Giảng viên Quản lý", "phone": null, "password": "Er5f4MTMiBFHk8@9", "roles": ["user-manager"]},
+  {"email": "gv.auditor@sis.hust.edu.vn", "fullName": "Giảng viên Kiểm toán", "phone": null, "password": "oWEWMezS6Q5ikH@9", "roles": ["auditor"]},
+  {"email": "gv.member@sis.hust.edu.vn", "fullName": "Giảng viên Thành viên", "phone": null, "password": "h3eURYbfkKibjo@9", "roles": ["member"]}
 ]
