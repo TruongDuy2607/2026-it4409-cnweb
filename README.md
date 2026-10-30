@@ -41,9 +41,9 @@ Mở thư mục `frontend` bằng VS Code Live Server tại `http://127.0.0.1:55
 
 ## Dữ liệu mẫu và tài khoản
 
-`backend/seed-users.json` chứa dữ liệu minh họa. Trước khi nộp bài cần thay bằng dữ liệu thật theo mục III.1.11 của đề: bản thân ở dòng đầu với vai trò `super-admin`, thành viên nhóm với vai trò `user-manager` và `auditor`, các bạn xung quanh với vai trò `member`, và ít nhất một vai trò tự tạo được gán cho ít nhất một người. Người ở dòng đầu của tệp xuất hiện đầu danh sách trên giao diện.
+`backend/seed-users.json` có 15 người dùng. Dòng đầu là thông tin của sinh viên với vai trò `super-admin`, các dòng còn lại là dữ liệu minh họa gồm hai người giữ vai trò `user-manager` và `auditor`, các người dùng `member` và vai trò tự tạo `tro-giang` được gán cho hai người. Người ở dòng đầu của tệp xuất hiện đầu danh sách trên giao diện. Mật khẩu của dữ liệu minh họa là mật khẩu dùng chung cho mục đích học tập, không dùng cho hệ thống thật.
 
-Bốn tài khoản dành cho giảng viên và bộ Postman collection dùng các email `gv.admin`, `gv.manager`, `gv.auditor`, `gv.member` ở tên miền `sis.hust.edu.vn`. Nên đổi mật khẩu của chúng trong `seed-users.json` và trong biến collection của Postman trước khi công khai repository.
+Bốn tài khoản dành cho giảng viên và bộ Postman collection dùng các email `gv.admin`, `gv.manager`, `gv.auditor`, `gv.member` ở tên miền `sis.hust.edu.vn`. Mật khẩu của chúng đã được đổi khỏi giá trị mặc định ban đầu trong `seed-users.json` và trong biến collection của Postman, và được ghi trong báo cáo nộp cho giảng viên.
 
 ## Kiểm thử bằng Postman
 
@@ -55,7 +55,7 @@ Dùng dòng lệnh: `npx newman run postman/RBAC-Ex3.postman_collection.json`. C
 
 ## Triển khai online
 
-Cấu hình trong `render.yaml` dùng Render cho Backend và Frontend, MongoDB Atlas cho cơ sở dữ liệu. Cấu hình chưa được chạy thử trên Render từ môi trường phát triển, nên cần kiểm tra lại khi triển khai.
+Cấu hình trong `render.yaml` dùng Render cho Backend và Frontend, MongoDB Atlas cho cơ sở dữ liệu. Bản online đã được triển khai theo các bước dưới đây, với Backend là Web Service, Frontend là Static Site và cơ sở dữ liệu là cụm Atlas M0. Có thể dùng Blueprint từ `render.yaml` hoặc tạo thủ công hai dịch vụ với cùng cấu hình. Nếu Backend ghi lỗi không kết nối được MongoDB, kiểm tra Network Access của Atlas đã có `0.0.0.0/0` ở trạng thái Active.
 
 1. MongoDB Atlas: tạo cụm M0, tạo database user, mở Network Access cho `0.0.0.0/0` (Render free không có IP tĩnh), lấy chuỗi kết nối dạng `mongodb+srv://<user>:<password>@<cluster>.mongodb.net/it4409_rbac`.
 2. Nạp dữ liệu mẫu vào Atlas từ máy cá nhân: đặt `MONGODB_URI` của Atlas trong `backend/.env` rồi chạy `node seed.js`.
